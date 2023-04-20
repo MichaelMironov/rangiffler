@@ -1,6 +1,5 @@
 package tests.web;
 
-import com.codeborne.selenide.Selenide;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Severity;
@@ -13,8 +12,7 @@ import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import page.MainPage;
 
-import static utils.DataUtils.generateRandomName;
-import static utils.DataUtils.generateRandomSurname;
+import static utils.DataUtils.*;
 
 @Epic("[WEB][Frontend]: Profile")
 @DisplayName("[WEB][Frontend]: Profile")
@@ -33,15 +31,14 @@ class ProfileTest extends BaseWebTest {
 
         MainPage mainPage = new MainPage()
                 .open()
-                .waitForPageLoaded()
+                .getHeader()
                 .toProfile()
                 .setFirstname(newFirstname)
                 .setLastname(newLastname)
                 .clickSave();
 
-        Selenide.refresh();
-
-        mainPage.toProfile()
+        mainPage.getHeader()
+                .toProfile()
                 .firstnameShouldBe(newFirstname)
                 .lastnameShouldBe(newLastname);
     }

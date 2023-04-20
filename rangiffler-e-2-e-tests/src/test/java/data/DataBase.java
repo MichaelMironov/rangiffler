@@ -17,7 +17,9 @@ public enum DataBase {
     private static final Config CFG = Config.getConfig();
 
     public String getUrl() {
-        return String.format(url, CFG.databaseAddress());
+        final String url = String.format(this.url, CFG.databaseAddress());
+        System.out.println(url);
+        return url;
     }
 
     public String getUrlForP6Spy() {

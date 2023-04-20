@@ -2,7 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import guru.qa.grpc.rangiffler.grpc.Country;
+import data.entity.CountryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,5 +25,9 @@ public class CountryJson {
 
     @JsonProperty("name")
     private String name;
+
+    public static CountryJson fromEntity(CountryEntity country) {
+        return new CountryJson(country.getId(), country.getCode(), country.getName());
+    }
 
 }

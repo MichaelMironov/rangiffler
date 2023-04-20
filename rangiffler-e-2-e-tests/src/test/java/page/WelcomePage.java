@@ -20,7 +20,14 @@ public class WelcomePage extends BasePage<WelcomePage> {
         return new LoginPage();
     }
 
+    @Step("Click on button [Register]")
+    public RegisterPage toRegistration() {
+        registerButton.click();
+        return new RegisterPage();
+    }
+
     @Override
+    @Step("Waiting for the 'Register page' to load")
     public WelcomePage waitForPageLoaded() {
         loginButton.should(visible);
         registerButton.should(visible);

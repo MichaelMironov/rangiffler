@@ -1,6 +1,6 @@
 package jupiter.extension;
 
-import data.PostgresHibernateUsersDAO;
+import data.dao.PostgresHibernateUsersDAO;
 import data.dao.PostgresSpringJdbcUsersDAO;
 import jupiter.annotation.meta.DAO;
 import org.junit.jupiter.api.extension.ExtensionContext;

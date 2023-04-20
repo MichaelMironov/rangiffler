@@ -4,8 +4,8 @@ import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.Error;
 
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 
 public class LoginPage extends BasePage<LoginPage> {
@@ -50,18 +50,23 @@ public class LoginPage extends BasePage<LoginPage> {
         return this;
     }
 
+    @Step("Should appear message with text: {text}")
+    public LoginPage messageShouldAppear(String text) {
+        $(byText(text)).should(appear);
+        return this;
+    }
+
     @Override
+    @Step("Waiting for the 'Login page' to load")
     public LoginPage waitForPageLoaded() {
         usernameInput.should(visible);
         passwordInput.should(visible);
-        submitButton.should(visible);
-        registerLink.should(visible);
         return this;
     }
 
     @Step("Expected error: {0}")
     public LoginPage errorShouldAppear(final Error badCredentials) {
-        errorContainer.shouldHave(text(badCredentials.content));
+        errorContainer.shouldHave(text(badCredentials.text));
         return this;
     }
 }

@@ -2,6 +2,7 @@ package model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import data.entity.PhotoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,5 +39,7 @@ public class UserJson {
 
     private transient List<UserJson> friends = new ArrayList<>();
     private transient List<UserJson> invitations = new ArrayList<>();
+    private transient List<PhotoJson> photos = new ArrayList<>();
+
 }
 

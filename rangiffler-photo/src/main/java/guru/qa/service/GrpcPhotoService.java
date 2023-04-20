@@ -114,6 +114,7 @@ public class GrpcPhotoService extends RangifflerPhotoServiceGrpc.RangifflerPhoto
                         .build()
                 )
                 .setDescription(photoEntity.getDescription())
+                .setUsername(requestPhoto.getUsername())
                 .build();
 
         responseObserver.onNext(response);

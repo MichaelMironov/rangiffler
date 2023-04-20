@@ -1,7 +1,5 @@
 package tests.grpc;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Empty;
 import guru.qa.grpc.rangiffler.grpc.Countries;
 import guru.qa.grpc.rangiffler.grpc.Country;
@@ -9,12 +7,11 @@ import io.qameta.allure.AllureId;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-import model.CountryJson;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import utils.DataUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -48,22 +45,14 @@ public class CountriesTest extends BaseGrpcTest {
     @DisplayName("gRPC: Country compliance check")
     void countryComplianceCheck() throws IOException {
 
-        final Countries allCountries = step("Get all countries",
-                () -> serviceBlockingStub.getCountries(Empty.getDefaultInstance()));
-        final List<Country> responseCountries = allCountries.getAllCountriesList();
-
-        final List<CountryJson> expectedCountries =
-                new ObjectMapper().readValue(new File("src/test/resources/data/countries.json"), new TypeReference<>() {
-                });
-
-        final List<String> expectedCountryCodeNames = expectedCountries
-                .stream().map(countryJson -> countryJson.getName() + " : " + countryJson.getCode()).toList();
+        final List<Country> responseCountries = step("Get all countries",
+                () -> serviceBlockingStub.getCountries(Empty.getDefaultInstance())).getAllCountriesList();
 
         final List<String> actualCountryCodeNames = responseCountries
                 .stream().map(country -> country.getName() + " : " + country.getCode()).toList();
 
         step("Checking compliance of countries by name and code",
-                () -> assertEquals(expectedCountryCodeNames, actualCountryCodeNames));
+                () -> assertEquals(DataUtils.allCountriesNamesAndCode(), actualCountryCodeNames));
 
     }
 

@@ -1,6 +1,5 @@
 package data.dao;
 
-import data.UsersDAO;
 import data.entity.UserEntity;
 import data.jdbc.DataSourceContext;
 import data.spring_jdbc.UsersRowMapper;

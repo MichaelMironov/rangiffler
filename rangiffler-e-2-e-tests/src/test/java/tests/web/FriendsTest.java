@@ -26,6 +26,7 @@ public class FriendsTest extends BaseWebTest {
     @ApiLogin(user = @GenerateUser(friends = @Friends(count = 3)))
     void shouldViewExistingFriendsInTable(@User UserJson user) {
         new MainPage().open()
+                .getHeader()
                 .toFriends()
                 .checkExistingFriendsCount(user.getFriends().size());
     }

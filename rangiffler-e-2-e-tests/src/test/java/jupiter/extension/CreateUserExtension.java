@@ -2,29 +2,35 @@ package jupiter.extension;
 
 import api.AuthClient;
 import api.UserdataClient;
+import data.dao.PostgresHibernateCountriesDAO;
+import data.dao.PostgresHibernatePhotosDAO;
+import data.entity.CountryEntity;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Step;
-import jupiter.annotation.ApiLogin;
-import jupiter.annotation.Friends;
-import jupiter.annotation.GenerateUser;
-import jupiter.annotation.Invitations;
+import jupiter.annotation.*;
 import jupiter.annotation.meta.User;
+import model.CountryJson;
 import model.FriendJson;
+import model.PhotoJson;
 import model.UserJson;
 import org.junit.jupiter.api.extension.*;
 import retrofit2.Response;
+import utils.DataUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static utils.DataUtils.generateRandomPassword;
-import static utils.DataUtils.generateRandomUsername;
+import static utils.DataUtils.*;
 
 public class CreateUserExtension implements BeforeEachCallback, ParameterResolver {
 
     private final UserdataClient userdataClient = new UserdataClient();
     private final AuthClient authClient = new AuthClient();
+
+    private final PostgresHibernatePhotosDAO hibernatePhotosDAO = new PostgresHibernatePhotosDAO();
+    private final PostgresHibernateCountriesDAO hibernateCountriesDAO = new PostgresHibernateCountriesDAO();
 
     public static final ExtensionContext.Namespace
             ON_METHOD_USERS_NAMESPACE = ExtensionContext.Namespace.create(CreateUserExtension.class, Selector.METHOD),
@@ -51,9 +57,40 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
 
             createFriendsIfPresent(generateUser, userJson);
             createInvitationsIfPresent(generateUser, userJson);
+            createPhotoIfPresent(generateUser, userJson);
 
             context.getStore(generateUserEntry.getKey().getNamespace()).put(testId, userJson);
         }
+    }
+
+    @Step("[BD][Hibernate] Generating country photo")
+    private void createPhotoIfPresent(final GenerateUser generateUser, final UserJson userJson) {
+
+        final GeneratePhoto[] photos = generateUser.photo();
+        final String username = userJson.getUsername();
+
+        if (generateUser.handleAnnotation()) {
+            for (final GeneratePhoto photo : photos) {
+
+                final CountryEntity country = hibernateCountriesDAO.getCountryByName(photo.country());
+
+                final CountryJson countryJson = CountryJson.fromEntity(country);
+
+                PhotoJson photoJson = new PhotoJson();
+                photoJson.setCountryJson(countryJson);
+                photoJson.setUsername(username);
+                photoJson.setDescription(photo.description());
+
+                byte[] randomPhoto = DataUtils.generateRandomPhoto();
+                String description = photo.description();
+                if (description.isEmpty()) description = generateRandomSentence(5);
+
+                userJson.setPhotos(List.of(photoJson));
+
+                hibernatePhotosDAO.addPhotoByUsername(username, country, description, randomPhoto);
+            }
+        }
+
     }
 
     private void createFriendsIfPresent(final GenerateUser generateUser, final UserJson user) throws Exception {
