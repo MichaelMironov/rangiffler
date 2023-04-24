@@ -8,7 +8,6 @@ import io.qameta.allure.Step;
 import model.FriendStatus;
 import org.openqa.selenium.Keys;
 import page.component.Header;
-import page.component.module.FriendsModule;
 
 import java.time.Duration;
 
