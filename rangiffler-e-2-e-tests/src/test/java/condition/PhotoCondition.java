@@ -6,6 +6,8 @@ import com.codeborne.selenide.Driver;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -14,6 +16,8 @@ import java.util.Arrays;
 import java.util.Base64;
 
 public class PhotoCondition extends Condition {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PhotoCondition.class.getCanonicalName());
     public static Condition photo(String expectedPhotoClasspath) {
         ClassLoader classLoader = PhotoCondition.class.getClassLoader();
         try (InputStream is = classLoader.getResourceAsStream(expectedPhotoClasspath)) {
@@ -37,6 +41,8 @@ public class PhotoCondition extends Condition {
     public CheckResult check(@NotNull Driver driver, WebElement element) {
         String imageSrc = element.getAttribute("src");
         String actualBase64Photo = StringUtils.substringAfter(imageSrc, "base64,");
+
+        LOG.info("Expected photo: {}\nActual photo: {}",expectedBase64Photo, actualBase64Photo.getBytes());
 
         return new CheckResult(Arrays.equals(expectedBase64Photo, actualBase64Photo.getBytes()), actualBase64Photo);
 

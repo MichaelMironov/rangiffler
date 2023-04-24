@@ -2,8 +2,10 @@ package jupiter.extension;
 
 import api.AuthClient;
 import api.UserdataClient;
+import data.dao.PostgresHibernateAuthDAO;
 import data.dao.PostgresHibernateCountriesDAO;
 import data.dao.PostgresHibernatePhotosDAO;
+import data.dao.PostgresHibernateUsersDAO;
 import data.entity.CountryEntity;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Step;
@@ -17,24 +19,28 @@ import org.junit.jupiter.api.extension.*;
 import retrofit2.Response;
 import utils.DataUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 
+import static io.qameta.allure.Allure.step;
+import static java.util.Optional.ofNullable;
+import static model.CountryJson.fromEntity;
+import static org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import static utils.DataUtils.*;
 
-public class CreateUserExtension implements BeforeEachCallback, ParameterResolver {
+public class CreateUserExtension implements BeforeEachCallback, ParameterResolver, AfterTestExecutionCallback {
 
     private final UserdataClient userdataClient = new UserdataClient();
+    private final PostgresHibernateAuthDAO authDAO = new PostgresHibernateAuthDAO();
+    private final PostgresHibernateUsersDAO usersDAO = new PostgresHibernateUsersDAO();
     private final AuthClient authClient = new AuthClient();
 
     private final PostgresHibernatePhotosDAO hibernatePhotosDAO = new PostgresHibernatePhotosDAO();
     private final PostgresHibernateCountriesDAO hibernateCountriesDAO = new PostgresHibernateCountriesDAO();
 
-    public static final ExtensionContext.Namespace
-            ON_METHOD_USERS_NAMESPACE = ExtensionContext.Namespace.create(CreateUserExtension.class, Selector.METHOD),
-            API_LOGIN_USERS_NAMESPACE = ExtensionContext.Namespace.create(CreateUserExtension.class, Selector.NESTED);
+    public static final Namespace
+            ON_METHOD_USERS_NAMESPACE = Namespace.create(CreateUserExtension.class, Selector.METHOD),
+            API_LOGIN_USERS_NAMESPACE = Namespace.create(CreateUserExtension.class, Selector.NESTED);
 
 
     @Step("API creating user")
@@ -58,61 +64,86 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
             createFriendsIfPresent(generateUser, userJson);
             createInvitationsIfPresent(generateUser, userJson);
             createPhotoIfPresent(generateUser, userJson);
+            addAvatarIfPresent(generateUser, userJson);
 
             context.getStore(generateUserEntry.getKey().getNamespace()).put(testId, userJson);
         }
     }
 
-    @Step("[BD][Hibernate] Generating country photo")
+    private void addAvatarIfPresent(final GenerateUser generateUser, final UserJson userJson) throws IOException {
+        final GenerateAvatar avatar = generateUser.avatar();
+
+        if (avatar.handleAnnotation()) {
+            step("API generate avatar for user", () -> {
+                userJson.setAvatar(generateAvatar());
+                userdataClient.updateUser(userJson);
+            });
+        }
+    }
+
     private void createPhotoIfPresent(final GenerateUser generateUser, final UserJson userJson) {
 
         final GeneratePhoto[] photos = generateUser.photo();
-        final String username = userJson.getUsername();
 
-        if (generateUser.handleAnnotation()) {
+        if (generateUser.handleAnnotation() && photos.length > 0) {
             for (final GeneratePhoto photo : photos) {
-
-                final CountryEntity country = hibernateCountriesDAO.getCountryByName(photo.country());
-
-                final CountryJson countryJson = CountryJson.fromEntity(country);
-
-                PhotoJson photoJson = new PhotoJson();
-                photoJson.setCountryJson(countryJson);
-                photoJson.setUsername(username);
-                photoJson.setDescription(photo.description());
-
-                byte[] randomPhoto = DataUtils.generateRandomPhoto();
-                String description = photo.description();
-                if (description.isEmpty()) description = generateRandomSentence(5);
-
-                userJson.setPhotos(List.of(photoJson));
-
-                hibernatePhotosDAO.addPhotoByUsername(username, country, description, randomPhoto);
+                step("[BD] Hibernate generate country photo for user: " + userJson.getUsername(),
+                        () -> generatePhoto(userJson, photo));
             }
         }
+    }
 
+    private void generatePhoto(final UserJson userJson, final GeneratePhoto photo) {
+
+        final CountryEntity country = hibernateCountriesDAO.getCountryByName(photo.country());
+
+        final CountryJson countryJson = fromEntity(country);
+
+        String randomPhoto = DataUtils.generateRandomPhoto();
+        String description = photo.description();
+        if (description.isEmpty()) description = generateRandomSentence(5);
+
+        PhotoJson photoJson = new PhotoJson();
+        photoJson.setCountryJson(countryJson);
+        photoJson.setUsername(userJson.getUsername());
+        photoJson.setDescription(description);
+        photoJson.setPhoto(randomPhoto);
+
+        userJson.setPhotos(List.of(photoJson));
+
+        hibernatePhotosDAO.addPhoto(PhotoJson.toEntity(photoJson));
     }
 
     private void createFriendsIfPresent(final GenerateUser generateUser, final UserJson user) throws Exception {
 
         final Friends friends = generateUser.friends();
+        final GeneratePhoto[] generatePhotos = generateUser.friends().photo();
 
         if (friends.handleAnnotation() && friends.count() > 0) {
-            for (int i = 0; i < friends.count(); i++) {
 
-                UserJson friend = registerUser(generateRandomUsername(), generateRandomPassword());
+            step("API creating user friend", () -> {
+                for (int i = 0; i < friends.count(); i++) {
 
-                FriendJson addFriend = new FriendJson();
-                FriendJson invitation = new FriendJson();
+                    UserJson friend = registerUser(generateRandomUsername(), generateRandomPassword());
 
-                addFriend.setUsername(friend.getUsername());
-                invitation.setUsername(user.getUsername());
+                    FriendJson addFriend = new FriendJson();
+                    FriendJson invitation = new FriendJson();
 
-                userdataClient.addFriend(user.getUsername(), addFriend);
-                userdataClient.acceptInvitation(friend.getUsername(), invitation);
+                    addFriend.setUsername(friend.getUsername());
+                    invitation.setUsername(user.getUsername());
 
-                user.getFriends().add(friend);
-            }
+                    userdataClient.addFriend(user.getUsername(), addFriend);
+                    userdataClient.acceptInvitation(friend.getUsername(), invitation);
+
+                    user.getFriends().add(friend);
+
+                    if (generatePhotos.length > 0) {
+                        for (final GeneratePhoto photo : generatePhotos) {
+                            generatePhoto(friend, photo);
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -121,17 +152,19 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
         final Invitations invitations = generateUser.invitations();
 
         if (invitations.handleAnnotation() && invitations.count() > 0) {
-            for (int i = 0; i < invitations.count(); i++) {
+            step("API creating invitations", () -> {
+                for (int i = 0; i < invitations.count(); i++) {
 
-                UserJson invitation = registerUser(generateRandomUsername(), generateRandomPassword());
+                    UserJson invitation = registerUser(generateRandomUsername(), generateRandomPassword());
 
-                FriendJson addFriend = new FriendJson();
-                addFriend.setUsername(user.getUsername());
+                    FriendJson addFriend = new FriendJson();
+                    addFriend.setUsername(user.getUsername());
 
-                userdataClient.addFriend(invitation.getUsername(), addFriend);
+                    userdataClient.addFriend(invitation.getUsername(), addFriend);
 
-                user.getInvitations().add(invitation);
-            }
+                    user.getInvitations().add(invitation);
+                }
+            });
         }
     }
 
@@ -139,7 +172,7 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
         authClient.authorize();
         final Response<Void> response = authClient.register(username, password);
         if (response.code() != 201) {
-            throw new RuntimeException("User is not registered");
+            throw new RuntimeException("User already registered");
         }
         UserJson currentUser = userdataClient.getCurrentUser(username);
         currentUser.setPassword(password);
@@ -176,10 +209,41 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
         return extensionContext.getStore(annotation.selector().getNamespace()).get(testId, UserJson.class);
     }
 
+    @Override
+    @Step("Clearing test data")
+    public void afterTestExecution(final ExtensionContext context) throws Exception {
+        final String testId = getTestId(context);
+
+        final Optional<UserJson> nestedUser = ofNullable(context.getStore(API_LOGIN_USERS_NAMESPACE).get(testId, UserJson.class));
+        final Optional<UserJson> methodUser = ofNullable(context.getStore(ON_METHOD_USERS_NAMESPACE).get(testId, UserJson.class));
+
+        if (nestedUser.isPresent()) {
+
+            final UserJson nUser = nestedUser.get();
+
+            nUser.getFriends().forEach(friend -> usersDAO.remove(usersDAO.getByUsername(friend.getUsername())));
+            nUser.getFriends().forEach(friend -> authDAO.removeByUsername(authDAO.getUserAuthEntity(friend.getUsername())));
+
+            usersDAO.remove(usersDAO.getByUsername(nUser.getUsername()));
+            authDAO.removeByUsername(authDAO.getUserAuthEntity(nUser.getUsername()));
+        }
+
+        if (methodUser.isPresent()) {
+
+            final UserJson mUser = methodUser.get();
+
+            mUser.getFriends().forEach(friend -> usersDAO.remove(usersDAO.getByUsername(friend.getUsername())));
+            mUser.getFriends().forEach(friend -> authDAO.removeByUsername(authDAO.getUserAuthEntity(friend.getUsername())));
+
+            usersDAO.remove(usersDAO.getByUsername(mUser.getUsername()));
+            authDAO.removeByUsername(authDAO.getUserAuthEntity(mUser.getUsername()));
+        }
+    }
+
     public enum Selector {
         METHOD, NESTED;
 
-        public ExtensionContext.Namespace getNamespace() {
+        public Namespace getNamespace() {
             switch (this) {
                 case METHOD -> {
                     return ON_METHOD_USERS_NAMESPACE;
