@@ -17,7 +17,7 @@ public abstract class JpaService {
         tx(em -> em.persist(entity));
     }
 
-    public void remove(Object entity) {
+    public void delete(Object entity) {
         tx(em -> em.remove(entity));
     }
 
