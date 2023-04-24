@@ -1,17 +1,19 @@
 package page.component.module;
 
 import com.codeborne.selenide.SelenideElement;
+import condition.PhotoCondition;
 import io.qameta.allure.Step;
 import page.MainPage;
 import page.component.Header;
 
 import static com.codeborne.selenide.Condition.value;
 import static com.codeborne.selenide.Selenide.$;
+import static java.time.Duration.ofSeconds;
 
 public class ProfileModule extends Header {
 
-    private final SelenideElement firstnameInput = $("input[name='firstName'");
-    private final SelenideElement lastnameInput = $("input[name='lastName'");
+    private final SelenideElement firstnameInput = $("input[name='firstName']");
+    private final SelenideElement lastnameInput = $("input[name='lastName']");
     private final SelenideElement submitButton = $("button[type='submit']");
 
     @Step("Set firstname: {0}")
@@ -41,6 +43,12 @@ public class ProfileModule extends Header {
     @Step("Check surname: {0}")
     public ProfileModule lastnameShouldBe(String surname) {
         lastnameInput.shouldHave(value(surname));
+        return this;
+    }
+
+    @Step("Check avatar")
+    public ProfileModule checkAvatar(final String avatar) {
+        $(".MuiAvatar-img").shouldHave(PhotoCondition.photo(avatar), ofSeconds(15L));
         return this;
     }
 }
