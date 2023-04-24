@@ -1,11 +1,13 @@
 package page;
 
 import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.WebDriverConditions.url;
 
 public class RegisterPage extends BasePage<RegisterPage> {
 
@@ -34,7 +36,7 @@ public class RegisterPage extends BasePage<RegisterPage> {
     }
 
     @Step("Submit registration")
-    public RegisterPage submitRegistration() {
+    public RegisterPage submit() {
         $(".form__submit").click();
         return new RegisterPage();
     }
@@ -44,6 +46,17 @@ public class RegisterPage extends BasePage<RegisterPage> {
     public RegisterPage waitForPageLoaded() {
         usernameInput.shouldBe(Condition.visible);
         passwordInput.shouldBe(Condition.visible);
+        return this;
+    }
+
+    @Step("Open 'Register page'")
+    public RegisterPage open() {
+        return Selenide.open(URL, RegisterPage.class);
+    }
+
+    @Step("Should stay on 'Register page'")
+    public RegisterPage shouldStayOnRegisterPage() {
+        Selenide.webdriver().shouldHave(url(URL));
         return this;
     }
 
