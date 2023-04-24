@@ -2,8 +2,6 @@ package tests.web;
 
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Epic;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
 import jupiter.annotation.GenerateUser;
 import jupiter.annotation.meta.User;
 import model.UserJson;
@@ -11,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import page.LoginPage;
 import page.MainPage;
 import page.WelcomePage;
 
@@ -21,12 +20,11 @@ import static utils.Error.PASSWORDS_SHOULD_BE_EQUAL;
 
 @Epic("[WEB][Frontend]: Registration")
 @DisplayName("[WEB][Frontend]: Registration")
-public class RegistrationTest extends BaseWebTest {
+class RegistrationTest extends BaseWebTest {
 
     @Test
     @AllureId("500")
-    @Severity(SeverityLevel.BLOCKER)
-    @Tags({@Tag("WEB"), @Tag("Positive")})
+    @Tags(@Tag("WEB"))
     @DisplayName("WEB: The user can successfully register")
     void userSuccessfullyRegister() {
         String username = generateRandomUsername();
@@ -37,7 +35,7 @@ public class RegistrationTest extends BaseWebTest {
                 .setUsername(username)
                 .setPassword(password)
                 .confirmPassword(password)
-                .submitRegistration()
+                .submit()
                 .toLogin()
                 .waitForPageLoaded()
                 .fillAuthorizationForm(username, password)
@@ -47,7 +45,6 @@ public class RegistrationTest extends BaseWebTest {
 
     @Test
     @AllureId("501")
-    @Severity(SeverityLevel.CRITICAL)
     @Tags({@Tag("WEB"), @Tag("Negative")})
     @DisplayName("WEB: Exists user can't register")
     @GenerateUser
@@ -61,13 +58,12 @@ public class RegistrationTest extends BaseWebTest {
                 .setUsername(username)
                 .setPassword(password)
                 .confirmPassword(password)
-                .submitRegistration()
+                .submit()
                 .errorShouldAppear("Username `" + username + "` already exists");
     }
 
     @Test
     @AllureId("502")
-    @Severity(SeverityLevel.CRITICAL)
     @Tags({@Tag("WEB"), @Tag("Negative")})
     @DisplayName("WEB: Should show error if password and confirm password are not equal")
     void shouldShowErrorIfPasswordAndConfirmPasswordAreNotEqual() {
@@ -80,8 +76,53 @@ public class RegistrationTest extends BaseWebTest {
                 .setUsername(username)
                 .setPassword(password)
                 .confirmPassword(password + "BAD")
-                .submitRegistration()
+                .submit()
                 .errorShouldAppear(PASSWORDS_SHOULD_BE_EQUAL.text);
+    }
+
+    @Test
+    @AllureId("503")
+    @Tags({@Tag("WEB"), @Tag("Negative")})
+    @DisplayName("WEB: The user remains on the registration page if fields not filled")
+    void shouldStayOnRegistrationPageIfFieldsNotEntered() {
+
+        new WelcomePage().open()
+                .toRegistration()
+                .submit()
+                .shouldStayOnRegisterPage();
+    }
+
+    @Test
+    @AllureId("504")
+    @Tags({@Tag("WEB"), @Tag("Negative")})
+    @DisplayName("WEB: Registered user cannot register")
+    @GenerateUser
+    void registeredUserCannotRegister(@User(selector = METHOD) UserJson user) {
+
+        new WelcomePage().open()
+                .toRegistration()
+                .setUsername(user.getUsername())
+                .setPassword(user.getPassword())
+                .confirmPassword(user.getPassword())
+                .submit()
+                .errorShouldAppear("Username `" + user.getUsername() + "` already exists");
+    }
+
+    @Test
+    @AllureId("505")
+    @Tags(@Tag("WEB"))
+    @DisplayName("WEB: The user can register when going from the login page")
+    @GenerateUser
+    void userCanRegisterFromRedirectLoginPage(@User(selector = METHOD) UserJson user) {
+
+        new LoginPage().open()
+                .waitForPageLoaded()
+                .toRegister()
+                .setUsername(user.getUsername())
+                .setPassword(user.getPassword())
+                .confirmPassword(user.getPassword())
+                .submit();
+
     }
 
 }
