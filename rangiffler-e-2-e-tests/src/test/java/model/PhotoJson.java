@@ -3,12 +3,12 @@ package model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import data.entity.PhotoEntity;
-import guru.qa.grpc.rangiffler.grpc.Photo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Data
@@ -33,13 +33,13 @@ public class PhotoJson {
     @JsonProperty("username")
     private String username;
 
-//    public static PhotoJson fromGrpcMessage(Photo photo) {
-//        return new PhotoJson(
-//                UUID.fromString(photo.getId()),
-//                CountryJson.fromGrpcMessage(photo.getCountry()),
-//                photo.getPhoto(),
-//                photo.getDescription(),
-//                photo.getUsername());
-//    }
+    public static PhotoEntity toEntity(PhotoJson photoJson) {
+        final PhotoEntity photoEntity = new PhotoEntity();
+        photoEntity.setPhoto(photoJson.getPhoto().getBytes(StandardCharsets.UTF_8));
+        photoEntity.setUsername(photoJson.getUsername());
+        photoEntity.setDescription(photoJson.getDescription());
+        photoEntity.setCountryId(photoJson.getCountryJson().getId());
+        return photoEntity;
+    }
 
 }
