@@ -47,7 +47,7 @@ public class DataUtils {
 
     }
 
-    public static byte[] generateRandomPhoto() {
+    public static String generateRandomPhoto() {
 
         final ClassLoader cl = DataUtils.class.getClassLoader();
 
@@ -55,13 +55,29 @@ public class DataUtils {
 
         final String randomCountry = countriesPhoto[(int) (Math.random() * countriesPhoto.length)];
 
-        System.out.println(randomCountry);
-
         try (InputStream is = cl.getResourceAsStream("data/img/" + randomCountry + ".jpg")) {
 
             final byte[] encode = Base64.getEncoder().encode(Objects.requireNonNull(is).readAllBytes());
-            final String s = "data:image/jpeg;base64," + new String(encode, StandardCharsets.UTF_8);
-            return s.getBytes(StandardCharsets.UTF_8);
+            return  "data:image/jpeg;base64," + new String(encode, StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static String generateAvatar() {
+
+        final ClassLoader cl = DataUtils.class.getClassLoader();
+
+        final String[] avatars = {"dima", "ira", "pizzly", "alexander", "alexey"};
+
+        final String rndAvatar = avatars[(int) (Math.random() * avatars.length)];
+
+        try (InputStream is = cl.getResourceAsStream("data/img/ava/" + rndAvatar + ".jpg")) {
+
+            final byte[] encode = Base64.getEncoder().encode(Objects.requireNonNull(is).readAllBytes());
+            return  "data:image/jpeg;base64," + new String(encode, StandardCharsets.UTF_8);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
