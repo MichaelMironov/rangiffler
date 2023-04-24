@@ -33,10 +33,10 @@ public class UserEntity {
     private Boolean accountNonExpired;
 
     @Column(name = "account_non_locked", nullable = false)
-    private Boolean AccountNonLocked;
+    private Boolean accountNonLocked;
 
     @Column(name = "credentials_non_expired", nullable = false)
-    private Boolean CredentialsNonExpired;
+    private Boolean credentialsNonExpired;
 
     @OneToMany(fetch = EAGER, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")
     private List<AuthorityEntity> authorities = new ArrayList<>();

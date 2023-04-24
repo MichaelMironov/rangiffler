@@ -4,16 +4,17 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
+import java.util.stream.Stream;
 
 @Builder
 @Getter
 @Setter
-@ToString
-@AllArgsConstructor
 @RequiredArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 public class UserEntity {
@@ -25,18 +26,53 @@ public class UserEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = true)
     private String firstname;
 
+    @Column(nullable = true)
     private String lastname;
 
     @Column(name = "avatar", columnDefinition = "bytea")
     private byte[] avatar;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<FriendsEntity> friends = new ArrayList<>();
+
+    @OneToMany(mappedBy = "friend", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<FriendsEntity> invites = new ArrayList<>();
+
+    public void addFriends(boolean pending, UserEntity... friends) {
+        List<FriendsEntity> friendsEntities = Stream.of(friends)
+                .map(f -> {
+                    FriendsEntity fe = new FriendsEntity();
+                    fe.setUser(this);
+                    fe.setFriend(f);
+                    fe.setPending(pending);
+                    return fe;
+                }).toList();
+
+        this.friends.addAll(friendsEntities);
+    }
+
+    public void removeFriends(UserEntity... friends) {
+        for (UserEntity friend : friends) {
+            getFriends().removeIf(f -> f.getFriend().getId().equals(friend.getId()));
+        }
+    }
+
+    public void removeInvites(UserEntity... invitations) {
+        for (UserEntity invite : invitations) {
+            getInvites().removeIf(i -> i.getUser().getId().equals(invite.getId()));
+        }
+    }
+
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        final UserEntity that = (UserEntity) o;
+        UserEntity that = (UserEntity) o;
         return id != null && Objects.equals(id, that.id);
     }
 
