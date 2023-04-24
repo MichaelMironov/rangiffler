@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 public @interface Friends {
 
     boolean handleAnnotation() default true;
-
+    GeneratePhoto[] photo() default {};
     int count() default 0;
 }
