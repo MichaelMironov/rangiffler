@@ -25,4 +25,6 @@ public @interface GenerateUser {
     Invitations invitations() default @Invitations(handleAnnotation = false);
 
     GeneratePhoto[] photo() default {};
+
+    GenerateAvatar avatar() default @GenerateAvatar(handleAnnotation = false);
 }
