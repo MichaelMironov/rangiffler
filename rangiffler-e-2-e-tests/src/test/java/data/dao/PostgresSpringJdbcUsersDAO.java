@@ -8,12 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static data.DataBase.USERDATA;
+import java.util.Optional;
+import java.util.UUID;
+
+import static data.DataBase.AUTH;
 
 public class PostgresSpringJdbcUsersDAO implements UsersDAO {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgresSpringJdbcUsersDAO.class);
-    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSourceContext.INSTANCE.getDataSource(USERDATA));
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSourceContext.INSTANCE.getDataSource(AUTH));
 
     @Step("[Spring-jdbc] Add user to database")
     @Override
@@ -40,7 +43,7 @@ public class PostgresSpringJdbcUsersDAO implements UsersDAO {
     @Step("[Spring-jdbc] Remove user from database")
     @Override
     public void remove(UserEntity user) {
-        jdbcTemplate.update("DELETE from users WHERE id = ?", user.getId());
+        jdbcTemplate.update("DELETE from users WHERE username = ?", user.getUsername());
     }
 
     @Step("[Spring-jdbc] Get user from database by username '{username}'")
