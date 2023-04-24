@@ -6,8 +6,6 @@ import page.MainPage;
 import page.component.module.FriendsModule;
 import page.component.module.ProfileModule;
 
-import java.io.File;
-
 import static com.codeborne.selenide.Selectors.byTagName;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
@@ -51,6 +49,12 @@ public class Header extends BaseComponent<Header> {
     @Step("Go to user profile")
     public ProfileModule toProfile() {
         profileIcon.click();
+        return new ProfileModule();
+    }
+
+    @Step("Set avatar from path: {0}")
+    public ProfileModule setAvatar(String path) {
+        $("input[type='file']").uploadFromClasspath(path);
         return new ProfileModule();
     }
 
