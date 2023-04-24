@@ -1,5 +1,6 @@
 package page;
 
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 import utils.Error;
@@ -7,6 +8,7 @@ import utils.Error;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.WebDriverConditions.url;
 
 public class LoginPage extends BasePage<LoginPage> {
 
@@ -44,15 +46,15 @@ public class LoginPage extends BasePage<LoginPage> {
         return expectedPage;
     }
 
-    @Step("Submit login")
-    public LoginPage submit() {
-        submitButton.click();
-        return this;
-    }
-
     @Step("Should appear message with text: {text}")
     public LoginPage messageShouldAppear(String text) {
         $(byText(text)).should(appear);
+        return this;
+    }
+
+    @Step("Should stay on 'Login page'")
+    public LoginPage shouldStayOnLoginPage() {
+        Selenide.webdriver().shouldHave(url(URL));
         return this;
     }
 
@@ -68,5 +70,15 @@ public class LoginPage extends BasePage<LoginPage> {
     public LoginPage errorShouldAppear(final Error badCredentials) {
         errorContainer.shouldHave(text(badCredentials.text));
         return this;
+    }
+
+    @Step("Open 'Login page'")
+    public LoginPage open() {
+        return Selenide.open(URL, LoginPage.class);
+    }
+
+    public RegisterPage toRegister() {
+        $("a[href*='register']").click();
+        return new RegisterPage();
     }
 }
