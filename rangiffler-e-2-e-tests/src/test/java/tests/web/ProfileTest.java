@@ -81,7 +81,6 @@ class ProfileTest extends BaseWebTest {
                 .clickSave();
 
         mainPage
-                .refreshPage()
                 .getHeader()
                 .toProfile()
                 .checkAvatar(newAvatar);
