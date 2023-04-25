@@ -4,8 +4,8 @@ import api.AuthClient;
 import api.UserdataClient;
 import data.dao.PostgresHibernateAuthDAO;
 import data.dao.PostgresHibernateCountriesDAO;
-import data.dao.PostgresHibernatePhotosDAO;
 import data.dao.PostgresHibernateUsersDAO;
+import data.dao.PostgresSpringJdbcPhotosDAO;
 import data.entity.CountryEntity;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Step;
@@ -34,8 +34,7 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
     private final PostgresHibernateAuthDAO authDAO = new PostgresHibernateAuthDAO();
     private final PostgresHibernateUsersDAO usersDAO = new PostgresHibernateUsersDAO();
     private final AuthClient authClient = new AuthClient();
-
-    private final PostgresHibernatePhotosDAO hibernatePhotosDAO = new PostgresHibernatePhotosDAO();
+    private final PostgresSpringJdbcPhotosDAO photosSpringDAO = new PostgresSpringJdbcPhotosDAO();
     private final PostgresHibernateCountriesDAO hibernateCountriesDAO = new PostgresHibernateCountriesDAO();
 
     public static final Namespace
@@ -111,7 +110,7 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
 
         userJson.setPhotos(List.of(photoJson));
 
-        hibernatePhotosDAO.addPhoto(PhotoJson.toEntity(photoJson));
+        photosSpringDAO.addPhoto(PhotoJson.toEntity(photoJson));
     }
 
     private void createFriendsIfPresent(final GenerateUser generateUser, final UserJson user) throws Exception {
@@ -223,7 +222,9 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
 
             nUser.getFriends().forEach(friend -> usersDAO.remove(usersDAO.getByUsername(friend.getUsername())));
             nUser.getFriends().forEach(friend -> authDAO.removeByUsername(authDAO.getUserAuthEntity(friend.getUsername())));
+            nUser.getFriends().forEach(friend -> photosSpringDAO.removePhotoByUsername(friend.getUsername()));
 
+            photosSpringDAO.removePhotoByUsername(nUser.getUsername());
             usersDAO.remove(usersDAO.getByUsername(nUser.getUsername()));
             authDAO.removeByUsername(authDAO.getUserAuthEntity(nUser.getUsername()));
         }
@@ -234,7 +235,9 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
 
             mUser.getFriends().forEach(friend -> usersDAO.remove(usersDAO.getByUsername(friend.getUsername())));
             mUser.getFriends().forEach(friend -> authDAO.removeByUsername(authDAO.getUserAuthEntity(friend.getUsername())));
+            mUser.getFriends().forEach(friend -> photosSpringDAO.removePhotoByUsername(friend.getUsername()));
 
+            photosSpringDAO.removePhotoByUsername(mUser.getUsername());
             usersDAO.remove(usersDAO.getByUsername(mUser.getUsername()));
             authDAO.removeByUsername(authDAO.getUserAuthEntity(mUser.getUsername()));
         }
