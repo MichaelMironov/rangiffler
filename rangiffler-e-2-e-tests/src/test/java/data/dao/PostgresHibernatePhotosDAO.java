@@ -15,19 +15,7 @@ public class PostgresHibernatePhotosDAO extends JpaService implements PhotosDAO 
 
     @Override
     public void addPhoto(PhotoEntity photoEntity) {
-
-        try {
-            em.createNativeQuery("insert into photos (country_id, photo, description, username) " +
-                                 "values (?,?,?,?);", PhotoEntity.class)
-                    .setParameter(1, photoEntity.getCountryId())
-                    .setParameter(2, photoEntity.getPhoto())
-                    .setParameter(3, photoEntity.getDescription())
-                    .setParameter(4, photoEntity.getUsername())
-                    .getSingleResult();
-        } catch (Exception e) {
-
-        }
-
+        merge(photoEntity);
     }
 
     @Override
