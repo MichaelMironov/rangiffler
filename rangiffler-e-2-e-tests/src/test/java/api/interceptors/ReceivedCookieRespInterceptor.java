@@ -21,7 +21,6 @@ public class ReceivedCookieRespInterceptor implements Interceptor {
         for (String header : headers) {
             String[] setCookie = header.split(";");
             for (String s : setCookie) {
-                System.out.println("INTERCEPT COOKIES: " + s);
                 if (s.contains("XSRF-TOKEN") || s.contains("JSESSIONID")) {
                     String[] keyValuePair = s.split("=");
                     loginDataHolder.removeCookie(keyValuePair[0]);
