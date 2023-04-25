@@ -10,4 +10,6 @@ public interface UsersDAO extends DAO {
     void remove(UserEntity user);
 
     UserEntity getByUsername(String username);
+
+    void removeByUsername(String username);
 }

@@ -41,4 +41,9 @@ public class PostgresHibernateUsersDAO extends JpaService implements UsersDAO {
                 .setParameter("username", username)
                 .getSingleResult();
     }
+
+    @Override
+    public void removeByUsername(final String username) {
+
+    }
 }

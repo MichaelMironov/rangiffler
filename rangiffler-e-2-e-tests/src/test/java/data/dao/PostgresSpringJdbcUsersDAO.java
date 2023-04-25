@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.annotation.Nonnull;
+
 import static data.DataBase.AUTH;
 
 public class PostgresSpringJdbcUsersDAO implements UsersDAO {
@@ -17,7 +19,7 @@ public class PostgresSpringJdbcUsersDAO implements UsersDAO {
 
     @Step("[Spring-jdbc] Add user to database")
     @Override
-    public int addUser(UserEntity users) {
+    public int addUser(@Nonnull final UserEntity users) {
         return jdbcTemplate.update("INSERT INTO users " +
                                    "(username, firstname, lastname, avatar)" +
                                    " VALUES (?, ?, ?, ?)",
@@ -30,7 +32,7 @@ public class PostgresSpringJdbcUsersDAO implements UsersDAO {
 
     @Step("[Spring-jdbc] Update user in database")
     @Override
-    public void updateUser(UserEntity user) {
+    public void updateUser(@Nonnull final UserEntity user) {
         jdbcTemplate.update("UPDATE users SET firstname = ?, lastname = ?  WHERE username = ?",
                 user.getFirstname(),
                 user.getLastname(),
@@ -39,13 +41,19 @@ public class PostgresSpringJdbcUsersDAO implements UsersDAO {
 
     @Step("[Spring-jdbc] Remove user from database")
     @Override
-    public void remove(UserEntity user) {
+    public void remove(@Nonnull final UserEntity user) {
         jdbcTemplate.update("DELETE from users WHERE username = ?", user.getUsername());
+    }
+
+    @Step("[Spring-jdbc] Remove user from database with name - {0}")
+    public void removeByUsername(@Nonnull final String username) {
+        getByUsername(username);
+        jdbcTemplate.update("DELETE from users WHERE username = ?", username);
     }
 
     @Step("[Spring-jdbc] Get user from database by username '{username}'")
     @Override
-    public UserEntity getByUsername(String username) {
+    public UserEntity getByUsername(@Nonnull final String username) {
         return jdbcTemplate.queryForObject("SELECT * FROM users WHERE username = ?",
                 new UsersRowMapper(),
                 username
