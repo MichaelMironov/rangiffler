@@ -26,9 +26,11 @@ class RegistrationTest extends BaseWebTest {
     @AllureId("500")
     @Tags(@Tag("WEB"))
     @DisplayName("WEB: The user can successfully register")
-    void userSuccessfullyRegister() {
-        String username = generateRandomUsername();
-        String password = generateRandomPassword();
+    @GenerateUser(register = false)
+    void userSuccessfullyRegister(@User(selector = METHOD) UserJson user) {
+
+        final String username = user.getUsername();
+        final String password = user.getPassword();
 
         new WelcomePage().open()
                 .toRegistration()
