@@ -19,6 +19,11 @@ const rangiffler = {
  tests: ["JUnit5", "Selenide", "Retrofit_2", "Allure", "gRPC-stub"],
  build: "gradle 7.6"
 }
-```
 
+//launch:
+  1. set profile for all services (vm options: -Dspring.profiles.active=local)
+  2. launch front: 1) rangiffler-client npm i
+                   2) rangiffler-client npm start
+  3. run services: rangiffler-auth, rangiffler-gateway, rangiffler-geo, rangiffler-photo, rangiffler-userdata
+```
 ---
