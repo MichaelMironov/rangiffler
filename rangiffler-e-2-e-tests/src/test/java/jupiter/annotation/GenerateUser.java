@@ -27,4 +27,6 @@ public @interface GenerateUser {
     GeneratePhoto[] photo() default {};
 
     GenerateAvatar avatar() default @GenerateAvatar(handleAnnotation = false);
+
+    boolean register() default true;
 }
