@@ -6,8 +6,6 @@ import data.jpa.EmfContext;
 import data.jpa.JpaService;
 import io.qameta.allure.Step;
 
-import java.util.Optional;
-
 
 public class PostgresHibernateUsersDAO extends JpaService implements UsersDAO {
 
@@ -43,7 +41,9 @@ public class PostgresHibernateUsersDAO extends JpaService implements UsersDAO {
     }
 
     @Override
+    @Step("[Hibernate] Remove user from database with name - {0}")
     public void removeByUsername(final String username) {
-
+        final UserEntity user = getByUsername(username);
+        delete(user);
     }
 }
