@@ -142,13 +142,6 @@ public class UserDataService {
         currentUser.removeInvites(friendToRemove);
         userRepository.save(currentUser);
         return UserJson.fromEntity(friendToRemove, FriendStatus.NOT_FRIEND);
-//        return currentUser
-//                .getFriends()
-//                .stream()
-//                .map(fe -> UserJson.fromEntity(fe.getFriend(), fe.isPending()
-//                        ? FriendStatus.INVITATION_SENT
-//                        : FriendStatus.FRIEND))
-//                .toList();
     }
 
     public @Nonnull
