@@ -90,7 +90,7 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
 
         if (generateUser.handleAnnotation() && photos.length > 0) {
             for (final GeneratePhoto photo : photos) {
-                step("[BD] Hibernate generate country photo for user: " + userJson.getUsername(),
+                step("[Spring-Jdbc|Photos] generate country photo for user: " + userJson.getUsername(),
                         () -> generatePhoto(userJson, photo));
             }
         }
@@ -224,26 +224,26 @@ public class CreateUserExtension implements BeforeEachCallback, ParameterResolve
 
             final UserJson nUser = nestedUser.get();
 
-            nUser.getFriends().forEach(friend -> usersDAO.remove(usersDAO.getByUsername(friend.getUsername())));
-            nUser.getFriends().forEach(friend -> authDAO.removeByUsername(authDAO.getUserAuthEntity(friend.getUsername())));
+            nUser.getFriends().forEach(friend -> usersDAO.removeByUsername(friend.getUsername()));
+            nUser.getFriends().forEach(friend -> authDAO.removeByUsername(friend.getUsername()));
             nUser.getFriends().forEach(friend -> photosSpringDAO.removePhotoByUsername(friend.getUsername()));
 
             photosSpringDAO.removePhotoByUsername(nUser.getUsername());
             usersDAO.removeByUsername(nUser.getUsername());
-            authDAO.removeByUsername(authDAO.getUserAuthEntity(nUser.getUsername()));
+            authDAO.removeByUsername(nUser.getUsername());
         }
 
         if (methodUser.isPresent()) {
 
             final UserJson mUser = methodUser.get();
 
-            mUser.getFriends().forEach(friend -> usersDAO.remove(usersDAO.getByUsername(friend.getUsername())));
-            mUser.getFriends().forEach(friend -> authDAO.removeByUsername(authDAO.getUserAuthEntity(friend.getUsername())));
+            mUser.getFriends().forEach(friend -> usersDAO.removeByUsername(friend.getUsername()));
+            mUser.getFriends().forEach(friend -> authDAO.removeByUsername(friend.getUsername()));
             mUser.getFriends().forEach(friend -> photosSpringDAO.removePhotoByUsername(friend.getUsername()));
 
             photosSpringDAO.removePhotoByUsername(mUser.getUsername());
             usersDAO.removeByUsername(mUser.getUsername());
-            authDAO.removeByUsername(authDAO.getUserAuthEntity(mUser.getUsername()));
+            authDAO.removeByUsername(mUser.getUsername());
         }
     }
 

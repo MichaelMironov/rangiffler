@@ -26,13 +26,11 @@ public class PostgresHibernateUsersDAO extends JpaService implements UsersDAO {
         merge(user);
     }
 
-    @Step("[Hibernate] Remove user from database")
     @Override
     public void remove(UserEntity user) {
         delete(user);
     }
 
-    @Step("[Hibernate] Get user from database by username '{username}'")
     @Override
     public UserEntity getByUsername(String username) {
         return em.createQuery("select u from UserEntity u where u.username=:username", UserEntity.class)
@@ -41,7 +39,7 @@ public class PostgresHibernateUsersDAO extends JpaService implements UsersDAO {
     }
 
     @Override
-    @Step("[Hibernate] Remove user from database with name - {0}")
+    @Step("[Hibernate|Userdata] Remove user with name - {0}")
     public void removeByUsername(final String username) {
         final UserEntity user = getByUsername(username);
         delete(user);
