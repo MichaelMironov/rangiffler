@@ -1,0 +1,119 @@
+version: '3.9'
+
+services:
+  rangiffler-all-db:
+    container_name: rangiffler-all-db
+    image: postgres:15.1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+  rangiffler-auth:
+    container_name: rangiffler-auth
+    image: miron9/rangiffler-auth:latest
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: "wget --spider http://localhost:9000/actuator/health || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+    depends_on:
+      rangiffler-all-db:
+        condition: service_healthy
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+  rangiffler-geo:
+    container_name: rangiffler-geo
+    image: miron9/rangiffler-geo:latest
+    expose:
+      - "8091"
+      - "8092"
+    restart: always
+    depends_on:
+      rangiffler-all-db:
+        condition: service_healthy
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+  rangiffler-gateway:
+    container_name: rangiffler-gateway
+    image: miron9/rangiffler-gateway:latest
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: "wget --spider http://localhost:8090/actuator/health || exit 1"
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+    depends_on:
+      - rangiffler-auth
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+  rangiffler-photo:
+    container_name: rangiffler-photo
+    image: miron9/rangiffler-photo:latest
+    expose:
+      - "8093"
+      - "8094"
+    restart: always
+    depends_on:
+      rangiffler-all-db:
+        condition: service_healthy
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+  rangiffler-userdata:
+    container_name: rangiffler-userdata
+    image: miron9/rangiffler-userdata:latest
+    expose:
+      - "8089"
+    restart: always
+    depends_on:
+      rangiffler-all-db:
+        condition: service_healthy
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+  rangiffler-frontend:
+    container_name: rangiffler-frontend
+    image: miron9/rangiffler-frontend:latest
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      rangiffler-gateway:
+        condition: service_healthy
+    networks:
+      - rangiffler-network
+    dns_search: .
+
+volumes:
+  pgdata:
+    external: true
+
+networks:
+  rangiffler-network:
+    driver: bridge

@@ -54,3 +54,14 @@ spring:
     hibernate:
       ddl-auto: validate
 
+---
+spring:
+  config:
+    activate:
+      on-profile: 'docker'
+  datasource:
+    url: 'jdbc:postgresql://rangiffler-all-db:5432/rangiffler-geo'
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
