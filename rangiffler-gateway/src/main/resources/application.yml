@@ -69,10 +69,10 @@ rangiffler-geo:
   base-uri: 'http://rangiffler-geo:8091'
 
 rangiffler-photo:
-  base-uri: 'http://rangiffler-geo:8093'
+  base-uri: 'http://rangiffler-photo:8093'
 
 rangiffler-front:
-  base-uri: 'http://rangiffler-front:3001'
+  base-uri: 'http://127.0.0.1:3001'
 
 rangiffler-userdata:
   base-uri: 'http://rangiffler-userdata:8089'

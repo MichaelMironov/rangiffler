@@ -68,7 +68,7 @@ spring:
     hibernate:
       ddl-auto: validate
 rangiffler-front:
-  base-uri: 'http://rangiffler-frontend'
+  base-uri: 'http://127.0.0.1:3001'
 rangiffler-auth:
   base-uri: 'http://rangiffler-auth:9000'
 ---
