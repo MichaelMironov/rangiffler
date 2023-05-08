@@ -8,12 +8,14 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=secret
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: [ "CMD", "pg_isready", "-U", "postgres"]
       interval: 3s
       timeout: 3s
       retries: 5
     expose:
       - "5432"
+    ports:
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: always
@@ -57,9 +59,9 @@ services:
     container_name: rangiffler-gateway
     image: miron9/rangiffler-gateway:latest
     ports:
-      - "8090:8090"
+      - "8080:8080"
     healthcheck:
-      test: "wget --spider http://localhost:8090/actuator/health || exit 1"
+      test: "wget --spider http://localhost:8080/actuator/health || exit 1"
       interval: 5s
       timeout: 5s
       retries: 10
