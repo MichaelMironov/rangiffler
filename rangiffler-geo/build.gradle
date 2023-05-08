@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.0.1'
     id 'io.spring.dependency-management' version '1.1.0'
+    id 'com.palantir.docker' version '0.34.0'
 }
 
 group 'guru.qa'
@@ -23,6 +24,22 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
 
+
+docker {
+    dependsOn build
+    name "miron9/rangiffler-geo:${project.version}"
+    tag 'latest', 'miron9/rangiffler-geo:latest'
+    files bootJar.archiveFile
+    buildArgs([
+            APP_VER: project.version
+    ])
+    noCache true
+}
+
+task dockerRmi(type: Exec) {
+    workingDir "${buildDir}"
+    commandLine 'bash', '-c', "docker rmi -f \$(docker images | grep 'rangiffler')\n"
+}
 
 tasks.named('test') {
     useJUnitPlatform()
