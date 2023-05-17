@@ -20,6 +20,10 @@ const rangiffler = {
  build: "gradle 7.6"
 }
 
+//preset:
+  1. create docker volume: "docker volume create pgdata"
+  2. launch database: "docker run --name rangiffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -v pgdata:/var/lib/postgresql/data -d postgres:15.1"
+
 //launch:
   1. set profile for all services (vm options: -Dspring.profiles.active=local)
   2. launch front: 1) rangiffler-client npm i
